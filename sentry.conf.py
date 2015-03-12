@@ -54,7 +54,7 @@ elif 'MANDRILL_USERNAME' in os.environ:
     EMAIL_HOST_PASSWORD = os.environ.get('MANDRILL_APIKEY')
 
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
 
 # Disable the default admins (for email)
 ADMINS = ()
