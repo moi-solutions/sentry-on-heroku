@@ -10,7 +10,7 @@ Sentry on Heroku
 
 
 Quick setup
--------------
+-----------
 
 Click the button below to automatically set up the Sentry in an app running on
 your Heroku account.
@@ -21,11 +21,11 @@ your Heroku account.
 
 Finally, you need to setup your first user::
 
-    heroku run "sentry --config=sentry.conf.py createsuperuser" --app YOURAPPNAME
+    heroku run "sentry --config=sentry.conf.py createuser" --app YOURAPPNAME
 
 
 Manual setup
--------------
+------------
 
 Follow the steps below to get Sentry up and running on Heroku:
 
@@ -34,39 +34,40 @@ Follow the steps below to get Sentry up and running on Heroku:
 
         heroku apps:create APP_NAME
 
-2. Add database to the application::
+2. Add PostgresSQL to the application::
 
-        heroku addons:add heroku-postgresql:dev
-        heroku pg:promote $(heroku config -s | awk -F= '$1 ~ /^HEROKU_POSTGRESQL_[A-Z]+_URL$/ {print $1}')
+        heroku addons:create heroku-postgresql:hobby-dev
 
-3. Set the Django settings module to be used::
+3. Add Redis to the application::
 
-        heroku config:set DJANGO_SETTINGS_MODULE=sentry.conf
+        heroku addons:create heroku-redis:premium-0
 
 4. Set Django's secret key for cryptographic signing and Sentry's shared secret
    for global administration privileges::
 
         heroku config:set SECRET_KEY=$(python -c "import base64, os; print(base64.b64encode(os.urandom(40)).decode())")
-        heroku config:set SENTRY_KEY=$(python -c "import base64, os; print(base64.b64encode(os.urandom(40)).decode())")
 
 5. Set the absolute URL to the Sentry root directory. The URL should not include
    a trailing slash. Replace the URL below with your application's URL::
 
-        heroku config:set SENTRY_URL_PREFIX=https://sentry.example.com
+        heroku config:set SENTRY_URL_PREFIX=https://sentry-example.herokuapp.com
 
 6. Deploy Sentry to Heroku::
 
         git push heroku master
 
-7. Run Sentry's database migrations::
+7. Sentry's database migrations are automatically run as part of the Heroku `release phase`_ ::
 
-        heroku run "sentry --config=sentry.conf.py upgrade"
+        heroku run "sentry --config=sentry.conf.py upgrade --noinput"
 
 8. Create a user account for yourself::
 
-        heroku run "sentry --config=sentry.conf.py createsuperuser"
+        heroku run "sentry --config=sentry.conf.py createuser"
 
 That's it!
+
+.. _release phase: https://devcenter.heroku.com/articles/release-phase
+
 
 
 Email notifications
@@ -74,18 +75,10 @@ Email notifications
 
 Follow the steps below, if you want to enable Sentry's email notifications:
 
-1. Add either SendGrid or Mandrill add-on to your Heroku application::
+1. Add SendGrid add-on to your Heroku application::
 
-        heroku addons:add sendgrid
-
-   or::
-
-        heroku addons:add mandrill
+        heroku addons:create sendgrid
 
 2. Set the reply-to email address for outgoing mail::
 
         heroku config:set SERVER_EMAIL=sentry@example.com
-
-3. Set the email addresses that should be notified::
-
-        heroku config:set ADMINS=john.matrix@example.com,jack.daniels@example.com
